@@ -18,7 +18,7 @@ def show(image, gray, scale):
     cv.imshow('gray', gray)
     cv.imshow('scaled', scale)
 
-def loop_folder(folder, size=(64,64), label = 1, ftype='.jpg'):
+def loop_folder(folder, label, size=(64,64), ftype='.jpg'):
     failed = 0
     images = 0
     values = []
@@ -38,30 +38,37 @@ def loop_folder(folder, size=(64,64), label = 1, ftype='.jpg'):
     return (images, failed + images, np.vstack(values))
 
 def main(argv):
-    if len(sys.argv) < 6:
-        print('python to_gray_csv.py width height dog_folder cat_folder output_csv')
+    if len(sys.argv) < 4:
+        print('python to_gray_csv.py dog_folder cat_folder output_csv')
         sys.exit(0)
     
-    size = (int(argv[1]), int(argv[2]))
-    dogs = argv[3]
-    cats = argv[4]
-    output = argv[5]
+    dogs = argv[1]
+    cats = argv[2]
+    output = argv[3]
     
-    valid, total, values1 = loop_folder(dogs, size, 1)
+    valid, total, values1 = loop_folder(dogs, 1)
     print()
     print(f'''Converted {valid} / {total} Pictures in {dogs}''')
     print('values1', values1.shape, values1.dtype)
     print()
     
-    valid, total, values2 = loop_folder(cats, size)
+    valid, total, values2 = loop_folder(cats, 0)
     print()
     print(f'''Converted {valid} / {total} Pictures in {cats}''')
     print('values2', values2.shape, values2.dtype)
     print()
     
     values = np.vstack((values1,values2))
+    print('Saving as .csv file')
     print('values:', values.shape, values.dtype)
-    np.savetxt(output, values, delimiter=',')
+    np.savetxt(output, values, delimiter=',', fmt='%d')
+    print()
+    
+    binary = 'binary.npy'
+    if (len(argv) < 5):
+        binary = argv[4]
+    print('Saving as .npy file (numpy binary matrix)')
+    np.save(binary, values)
     print()
 
 if __name__ == '__main__':
