@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 import sys
 from pathlib import Path
-from scikit-learn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 
 def cvt_img(file, size=(64,64)):
     image = cv.imread(file)
@@ -20,7 +20,7 @@ def cvt_dir(dir, size=(64,64), ftype='.jpg'):
             img = cvt_img(str(p))
         except Exception as e:
             failed += 1
-            sys.stderr(f'''{p} => {e}''')
+            sys.stderr.write(f'''{str(p)} => {e}''')
         else:
             success += 1
             images.append(img.ravel())
@@ -43,10 +43,10 @@ def main(argv):
     small_dim = min(dogs.shape[0], cats.shape[0])
     print('small dimension:', small_dim)
 
-    data = np.vstack(dogs[:small_dim,:], cats[:small_dim,:])
+    data = np.vstack((dogs[:small_dim,:], cats[:small_dim,:]))
     print('data:', data.shape, data.dtype)
 
-    labels = np.vstack(np.ones((small_dim,1)), np.zeros((small_dim,1)))
+    labels = np.vstack((np.ones((small_dim,1)), np.zeros((small_dim,1))))
     print('labels:', labels.shape, labels.dtype)
 
     data_train, data_test, label_train, label_test = train_test_split(data, labels, test_size=0.1)
@@ -56,7 +56,7 @@ def main(argv):
     print('label test:', label_test.shape, label_test.dtype)
 
     print(f'''Outputing to "{Path(argv[3])}"''')
-    np.savez_compressed(argv[3], x_train, y_train, x_test, y_test)
+    np.savez_compressed(argv[3], data_train=data_train, label_train=label_train, data_test=data_test, label_test=label_test)
 
 if __name__ == '__main__':
     main(sys.argv)
