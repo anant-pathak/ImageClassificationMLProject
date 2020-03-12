@@ -41,12 +41,14 @@ def main(argv):
     print('cats:', cats.shape, cats.dtype)
 
     small_dim = min(dogs.shape[0], cats.shape[0])
-    print('small dimension:', small_dim)
+    array_type = dogs.dtype
+    assert(array_type == cats.dtype)
+    print('small dimension:', small_dim, 'data type:', array_type)
 
     data = np.vstack((dogs[:small_dim,:], cats[:small_dim,:]))
     print('data:', data.shape, data.dtype)
 
-    labels = np.vstack((np.ones((small_dim,1)), np.zeros((small_dim,1))))
+    labels = np.vstack((np.ones((small_dim,1), dtype=array_type), np.zeros((small_dim,1), dtype=array_type)))
     print('labels:', labels.shape, labels.dtype)
 
     data_train, data_test, label_train, label_test = train_test_split(data, labels, test_size=0.1)
