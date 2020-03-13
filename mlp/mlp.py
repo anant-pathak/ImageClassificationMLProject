@@ -1,10 +1,73 @@
 import sys
 
+import numpy as np
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
+
+num_classes = 2
+
+
+def get_data(file_path):
+    # file = np.load('../Data/converted.npz')
+    file = np.load(file_path)
+    data_train = file['data_train']
+    label_train = file['label_train']
+    data_test = file['data_test']
+    label_test = file['label_test']
+
+    return data_train, label_train, data_test, label_test
+
+def make_sequential(activation='sigmoid', hidden_shape=[100, 10], epochs=128, input_size=4096 ):
+
+    model = Sequential()
+    model.add(Dense(hidden_shape[0], activation=activation , input_shape = (input_size,)))
+    for layer in hidden_shape[1:]:
+        model.add(Dense(layer, activation=activation))
+
+    model.add(Dense(num_classes, activation='softmax'))
+
+    return model
+
+
+def mlp_catdog(file_path = './Data/converted.npz', activ='sigmoid', batch_size = 128, epochs = 20, hidden_shape=[500, 100]):
+    data_train, label_train, data_test, label_test = get_data(file_path)
+
+    data_train = data_train.astype('float32')
+    data_test = data_test.astype('float32')
+
+    data_train /= 255
+    data_test /= 255
+
+    print("data_train: ", data_train.shape, data_train.dtype)
+    print("data_test: ", data_test.shape, data_test.dtype)
+
+    # convert class vectors to binary class matrices
+    label_train = keras.utils.to_categorical(label_train, num_classes)
+    label_test = keras.utils.to_categorical(label_test, num_classes)
+
+    print("label_train:", label_train.shape, label_train.dtype)
+    print("label_test:", label_test.shape, label_test.dtype)
+
+    model = make_sequential()
+    
+    model.summary()
+
+    model.compile(loss='mean_squared_error',
+                optimizer=RMSprop(),
+                metrics=['accuracy'])
+
+    history = model.fit(data_train, label_train,
+                        batch_size=batch_size,
+                        epochs=epochs,
+                        verbose=1,
+                        validation_data=(data_test, label_test))
+    score = model.evaluate(data_test, label_test, verbose=0)
+    print('Test loss:', score[0])
+    print('Test accuracy:', score[1])        
+
 
 # mnist example pulled from Keras github to insure that it actually works
 # https://github.com/keras-team/keras/blob/master/examples/mnist_mlp.py
@@ -49,7 +112,8 @@ def mnist_example(batch_size = 128, num_classes = 10, epochs = 20):
 
 def main(argv):
     # print(argv)
-    mnist_example()
+    # mnist_example()
+    mlp_catdog()
 
 if __name__ == '__main__':
     main(sys.argv)
