@@ -6,6 +6,8 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
+from keras.utils import plot_model
+import matplotlib.pyplot as plt
 
 num_classes = 2
 
@@ -20,7 +22,7 @@ def get_data(file_path):
 
     return data_train, label_train, data_test, label_test
 
-def make_sequential(activation='sigmoid', hidden_shape=[100, 10], epochs=128, input_size=4096 ):
+def make_sequential(activation='sigmoid', hidden_shape=[100, 10], input_size=4096 ):
 
     model = Sequential()
     model.add(Dense(hidden_shape[0], activation=activation , input_shape = (input_size,)))
@@ -34,6 +36,8 @@ def make_sequential(activation='sigmoid', hidden_shape=[100, 10], epochs=128, in
 
 def mlp_catdog(file_path = './Data/converted.npz', activ='sigmoid', batch_size = 128, epochs = 20, hidden_shape=[500, 100]):
     data_train, label_train, data_test, label_test = get_data(file_path)
+
+    # print(label_train)
 
     data_train = data_train.astype('float32')
     data_test = data_test.astype('float32')
@@ -66,7 +70,35 @@ def mlp_catdog(file_path = './Data/converted.npz', activ='sigmoid', batch_size =
                         validation_data=(data_test, label_test))
     score = model.evaluate(data_test, label_test, verbose=0)
     print('Test loss:', score[0])
-    print('Test accuracy:', score[1])        
+    print('Test accuracy:', score[1])
+
+    # print(history.history)
+
+    # Plot training & validation accuracy values
+    plt.figure()
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.axis([0.0, epochs, 0.0, 1.0])
+    # plt.show()
+    plt.savefig("model_acc.png", dpi=300)
+
+    plt.figure()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.axis([0.0, epochs, 0.0, 1.0])
+    # plt.show()
+    plt.savefig("model_loss.png", dpi=300)
+
+
+
 
 
 # mnist example pulled from Keras github to insure that it actually works
@@ -113,7 +145,7 @@ def mnist_example(batch_size = 128, num_classes = 10, epochs = 20):
 def main(argv):
     # print(argv)
     # mnist_example()
-    mlp_catdog()
+    mlp_catdog(epochs=10)
 
 if __name__ == '__main__':
     main(sys.argv)
