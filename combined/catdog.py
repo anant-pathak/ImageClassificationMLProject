@@ -112,7 +112,8 @@ def run_cnn(epochs, batch_size, data_train, label_train, data_test, label_test):
 
 def main(argv):
     if (len(argv) < 2):
-        print('python catdog.py <path input data (an .npz)> <epochs = 20> <batch_size = 128>')
+        print('> python catdog.py <path input data (an .npz)> <epochs = 20> <batch_size = 128>')
+        print('> python catdog.py ../preprocess_csv/converted.npz')
         return
     
     data_train, label_train, data_test, label_test = load_data(argv[1])
