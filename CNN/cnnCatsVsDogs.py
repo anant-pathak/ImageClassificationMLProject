@@ -2,9 +2,16 @@ import cv2
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Dropout, Activation, Conv2D, MaxPooling2D
+# import tensorflow as tf
+# from tensorflow.keras.models import Sequential
+# from tensorflow.keras.layers import Dense, Flatten, Dropout, Activation, Conv2D, MaxPooling2D
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Activation
+from keras import metrics
+from keras import optimizers
+from keras import losses
+from keras import activations
 import pickle
 
 #pickle.dump( X, open( "train_x", "wb" ) )
@@ -53,4 +60,10 @@ model.compile(optimizer="adam",
               metrics=['accuracy'])
 
 model.fit(train_imgs, train_labels, epochs=10, batch_size=32, validation_split=0.2)
+model.summary()
+
+predictions = model.predict(test_imgs)
+
+
+
 
