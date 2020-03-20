@@ -1,19 +1,11 @@
+import keras,os
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, MaxPooling2D , Flatten, BatchNormalization, Activation, Dropout
+from keras.preprocessing.image import ImageDataGenerator
+import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-import os
-import numpy as np
-# import tensorflow as tf
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import Dense, Flatten, Dropout, Activation, Conv2D, MaxPooling2D
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Activation
-from keras import metrics
-from keras import optimizers
-from keras import losses
-from keras import activations
-import pickle
-
+from keras.utils import np_utils
 #pickle.dump( X, open( "train_x", "wb" ) )
 #pickle.dump( y, open( "train_y", "wb" ) )
 
@@ -28,9 +20,9 @@ imgs = os.listdir("/Users/anantpathak/Learning/MachineLearning/catsvsdogs/train"
 images_scanned = 0
 for i in imgs:
     images_scanned = images_scanned+1
-    print(images_scanned)
+    # print(images_scanned)
     categories = i.split(".")
-    temp_img = cv2.imread(os.path.join(basePath, i), cv2.IMREAD_GRAYSCALE)
+    temp_img = cv2.imread(os.path.join(basePath, i))
     temp_img = cv2.resize(temp_img, dsize=(64,64))
     if int(categories[1]) > int("11000"):
         test_imgs.append(temp_img)
@@ -46,34 +38,42 @@ for i in imgs:
         else:
             train_labels.append(1) # DOG = 1
 #Preprocessing on Train data
-train_imgs = np.array(train_imgs).reshape(-1, 64,64,1) # -1: We want numpy to figure it out; (64,64,1): 64X64 is image dimension and 1 is 1D(grey scale)
+train_imgs = np.array(train_imgs).reshape(-1, 64,64,3) # -1: We want numpy to figure it out; (64,64,1): 64X64 is image dimension and 1 is 1D(grey scale)
 train_labels = np.array(train_labels)
 train_imgs = train_imgs/255.0
 #Preprocess test data"
-test_imgs = np.array(test_imgs).reshape(-1, 64,64,1)
+test_imgs = np.array(test_imgs).reshape(-1, 64,64,3)
 test_labels = np.array(test_labels)
 test_imgs = test_imgs/255.0
 
 
 
 model = Sequential()
-# Adds a densely-connected layer with 64 units to the model:
-model.add(Conv2D(64,(3,3), activation = 'relu', input_shape = train_imgs.shape[1:]))
-model.add(MaxPooling2D(pool_size = (2,2)))
-# Add another:
-model.add(Conv2D(64,(3,3), activation = 'relu'))
-model.add(MaxPooling2D(pool_size = (2,2)))
 
+model.add(Conv2D(filters = 32, kernel_size = (5,5), activation = "relu", input_shape = (64,64,3)))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size = (2,2)))
+model.add(Dropout(0.2))
+
+model.add(Conv2D(filters = 64, kernel_size = (5,5), activation = "relu"))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size = (2,2)))
+model.add(Dropout(0.2))
+
+model.add(Conv2D(filters = 128, kernel_size = (5,5), activation = "relu"))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size = (2,2)))
+model.add(Dropout(0.2))
+
+model.add(Activation('relu'))
 model.add(Flatten())
-model.add(Dense(64, activation='relu'))
-# Add a softmax layer with 10 output units:
-model.add(Dense(1, activation='sigmoid'))
 
-model.compile(optimizer="adam",
-              loss="mean_squared_error", # mean_squared_error | binary_crossentropy
-              metrics=['accuracy'])
+model.add(Dense(64, activation = 'relu'))
+model.add(Dense(1, activation = 'sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.summary()
+history = model.fit(train_imgs, train_labels, epochs=1, batch_size=200, validation_split=0.2)
 
-history = model.fit(train_imgs, train_labels, epochs=20, batch_size=128, validation_data=(test_imgs, test_labels)) #validation_split = 0.2
 model.summary()
 print("history keys = ", history.history.keys())
 #storing the histor
@@ -96,18 +96,18 @@ plt.title('Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
-plt.axis([0.0, 20 , 0.0, 1.0])
+plt.axis([0.0, 1 , 0.0, 1.0])
 # plt.show()
 plt.savefig("cnnAccuracy.png", dpi=300)
 
 plt.figure()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
-plt.title('MSE Model Loss')
+plt.title('Model Loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
-plt.axis([0.0, 20, 0.0, 1.0])
+plt.axis([0.0, 1, 0.0, 1.0])
 # plt.show()
 plt.savefig("cnnLoss.png", dpi=300)
 
